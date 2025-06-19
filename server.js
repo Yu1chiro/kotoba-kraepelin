@@ -12,10 +12,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Data kosakata/kanji Jepang untuk tes
 // Hapus/ganti bagian japaneseVocabulary dengan ini:
 const vocabularyFiles = {
-  minna43: require('./data/minna43.json'),
-  minna44: require('./data/minna44.json'),
-  kanjin4: require('./data/n4.json'),
-  kanjin5: require('./data/n5.json')
+    kanjin3: require('./data/n3.json'),
+    kanjin4: require('./data/n4.json'),
+    kanjin5: require('./data/n5.json'),
+    minna43: require('./data/minna43.json'),
+    minna44: require('./data/minna44.json')
 };
 
 
