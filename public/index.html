@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> ウチダ・ひらカン字 | Grammar based</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="icon.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-cover bg-center min-h-screen" style="background-image: url('/icon.png');">
+    <div id="app" class="container mx-auto px-4 py-8">
+    <!-- Header with animated gradient -->
+    <div class="text-center mb-8 transform transition-all duration-500">
+        <h1 class="text-4xl font-bold text-gray-200 mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.6);">
+            ウチダ・ひらカン字
+        </h1>
+        <p class="text-gray-600 animate-fade-in">ようこそ！</p>
+    </div>
+
+    <!-- Main Menu with smooth entrance animation -->
+    <div id="main-menu" class="max-w-2xl mx-auto animate-fade-in-up">
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-6 transition-all duration-300 hover:shadow-xl">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800">設定 : </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="animate-fade-in-left">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Vocab : </label>
+                <select id="vocab-select" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    <option value="">Loading...</option>  
+                </select>
+            </div>
+                <div class="animate-fade-in-left">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">時間管理 : </label>
+                    <input type="number" id="duration" value="60" min="30" max="300" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+                <div class="animate-fade-in-right">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">問題間隔の時間 : </label>
+                    <input type="number" id="interval" value="3" min="1" max="10" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="start-test" class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                    <span class="relative z-10">スタート</span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Preview with hover effects -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">最後のデータ</h3>
+            <div id="stats-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-4 rounded-lg transition-transform duration-300 hover:scale-105 hover:shadow-md">
+                    <div class="text-2xl font-bold text-blue-600 animate-count-up" id="last-accuracy">-</div>
+                    <div class="text-sm text-gray-600">パワー (%)</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg transition-transform duration-300 hover:scale-105 hover:shadow-md">
+                    <div class="text-2xl font-bold text-green-600 animate-count-up" id="last-wpm">-</div>
+                    <div class="text-sm text-gray-600">WPM</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg transition-transform duration-300 hover:scale-105 hover:shadow-md">
+                    <div class="text-2xl font-bold text-purple-600 animate-count-up" id="total-tests">-</div>
+                    <div class="text-sm text-gray-600">最後テスト</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg transition-transform duration-300 hover:scale-105 hover:shadow-md">
+                    <div class="text-2xl font-bold text-orange-600 animate-count-up" id="best-score">-</div>
+                    <div class="text-sm text-gray-600">金点</div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <button id="view-history" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                   ヒストリー
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Interface with pulse animation -->
+    <div id="test-interface" class="hidden max-w-4xl mx-auto animate-fade-in">
+        <div class="bg-white rounded-xl shadow-xl p-8">
+            <!-- Test Header -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="text-lg font-semibold text-gray-700">
+                    問題 <span id="current-question" class="text-blue-600">1</span> ・ <span id="total-questions" class="text-blue-600">0</span>
+                </div>
+                <div class="text-lg font-bold text-red-600 animate-pulse">
+                    時間: <span id="timer">00:00</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar with animated transition -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-blue-400 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+
+            <!-- Question with bounce animation -->
+            <div class="text-center mb-8">
+                <div class="text-3xl font-bold mb-4 text-gray-800 animate-bounce-in" id="question-text">問</div>
+                <div class="text-lg text-gray-600 animate-fade-in" id="question-type">Pilih arti yang benar:</div>
+            </div>
+
+            <!-- Options with staggered animations -->
+            <div class="grid grid-cols-2 gap-4 mb-6" id="options-container">
+                <!-- Options will be generated here -->
+            </div>
+
+            <!-- Score Display with glow effect -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 animate-glow">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-700">マル: <span id="correct-count" class="font-bold text-green-600 animate-count-up">0</span></span>
+                    <span class="text-gray-700">バツ: <span id="wrong-count" class="font-bold text-red-600 animate-count-up">0</span></span>
+                    <span class="text-gray-700">パワー: <span id="live-accuracy" class="font-bold text-blue-600 animate-count-up">0%</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen with confetti effect -->
+    <div id="results-screen" class="hidden max-w-4xl mx-auto animate-fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-8 relative overflow-hidden">
+            <!-- Confetti elements would be added here via JavaScript -->
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">テストの結果</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-xl text-center transition-transform duration-300 hover:scale-105">
+                    <div class="text-3xl font-bold text-blue-600 animate-count-up" id="result-accuracy">0%</div>
+                    <div class="text-gray-600">パワー</div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-xl text-center transition-transform duration-300 hover:scale-105">
+                    <div class="text-3xl font-bold text-green-600 animate-count-up" id="result-wpm">0</div>
+                    <div class="text-gray-600">WPM</div>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-xl text-center transition-transform duration-300 hover:scale-105">
+                    <div class="text-3xl font-bold text-purple-600 animate-count-up" id="result-correct">0</div>
+                    <div class="text-gray-600">正しい答え</div>
+                </div>
+                <div class="bg-red-50 p-6 rounded-xl text-center transition-transform duration-300 hover:scale-105">
+                    <div class="text-3xl font-bold text-red-600 animate-count-up" id="result-wrong">0</div>
+                    <div class="text-gray-600">間違いこと</div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="test-again" class="bg-blue-600 mb-5 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4 shadow-md">
+                    やり直す
+                </button>
+                <button id="view-detailed-history" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+                    ヒストリ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Screen with slide-in animation -->
+    <div id="history-screen" class="hidden max-w-6xl mx-auto animate-slide-in-right">
+        <div class="bg-white rounded-xl shadow-xl p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">ヒストのテスト</h2>
+                <button id="back-to-menu" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                   ホーム
+                </button>
+            </div>
+
+            <!-- Statistics Chart -->
+           <div class="mb-8 bg-gray-50 p-4 rounded-xl" style="position: relative; height:50vh; width:100%">
+    <canvas id="statistics-chart"></canvas>
+</div>
+
+            <!-- History Table with hover effects -->
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">日・月・年</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">タイム</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">パワー</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">WPM</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">マル/バツ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-gray-200">
+                        <!-- History entries will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button id="clear-history" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                   データ消える
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom animations -->
+<style>
+    @keyframes gradient-x {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .animate-gradient-x {
+        background-size: 200% 200%;
+        animation: gradient-x 3s ease infinite;
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .animate-fade-in-left {
+        animation: fadeInLeft 0.5s ease-out;
+    }
+    
+    .animate-fade-in-right {
+        animation: fadeInRight 0.5s ease-out;
+    }
+    
+    .animate-bounce-in {
+        animation: bounceIn 0.5s ease-out;
+    }
+    
+    .animate-slide-in-right {
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    .animate-count-up {
+        transition: all 0.5s ease-out;
+    }
+    
+    .animate-glow {
+        animation: glow 2s infinite alternate;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeInLeft {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes glow {
+        from { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+        to { box-shadow: 0 0 15px rgba(59, 130, 246, 0.8); }
+    }
+</style>
+
+    <script>
+        class KraepelinTest {
+            constructor() {
+                this.currentTest = null;
+                this.currentQuestion = 0;
+                this.answers = [];
+                this.timer = null;
+                this.startTime = null;
+                this.endTime = null;
+                this.timeRemaining = 0;
+                this.correctCount = 0;
+                this.wrongCount = 0;
+                
+                this.initializeEventListeners();
+                this.loadStatistics();
+                this.loadAvailableVocabs(); 
+            }
+
+            initializeEventListeners() {
+                document.getElementById('start-test').addEventListener('click', () => this.startTest());
+                document.getElementById('test-again').addEventListener('click', () => this.showMainMenu());
+                document.getElementById('view-history').addEventListener('click', () => this.showHistory());
+                document.getElementById('view-detailed-history').addEventListener('click', () => this.showHistory());
+                document.getElementById('back-to-menu').addEventListener('click', () => this.showMainMenu());
+                document.getElementById('clear-history').addEventListener('click', () => this.clearHistory());
+            }
+
+          // PERBAIKAN 1: Tambahkan pengecekan di selectAnswer untuk menghindari undefined
+selectAnswer(selectedAnswer) {
+    // Tambahkan pengecekan untuk memastikan question ada
+    if (!this.currentTest || !this.currentTest.questions || this.currentQuestion >= this.currentTest.questions.length) {
+        console.error('Question not found or test not initialized');
+        return;
+    }
+    
+    const question = this.currentTest.questions[this.currentQuestion];
+    
+    // Tambahkan pengecekan untuk memastikan question.correct ada
+    if (!question || question.correct === undefined) {
+        console.error('Question or correct answer not found');
+        return;
+    }
+    
+    const isCorrect = selectedAnswer === question.correct;
+    
+    this.answers.push({
+        question: question.question,
+        selected: selectedAnswer,
+        correct: question.correct,
+        isCorrect: isCorrect,
+        timestamp: Date.now()
+    });
+
+    if (isCorrect) {
+        this.correctCount++;
+    } else {
+        this.wrongCount++;
+    }
+
+    this.updateLiveStats();
+    this.currentQuestion++;
+    
+    setTimeout(() => {
+        this.displayQuestion();
+    }, 500);
+}
+
+// PERBAIKAN 2: Perbaiki endTest untuk menangani error response
+async endTest() {
+    if (this.timer) {
+        clearInterval(this.timer);
+    }
+    
+    this.endTime = Date.now();
+    
+    try {
+        const response = await fetch('/api/test/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                answers: this.answers,
+                duration: this.currentTest.duration,
+                interval: this.currentTest.interval,
+                startTime: this.startTime,
+                endTime: this.endTime
+            })
+        });
+        
+        // Tambahkan pengecekan response status
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Tambahkan pengecekan content-type untuk memastikan response adalah JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Response is not JSON format');
+        }
+        
+        const result = await response.json();
+        this.saveResult(result);
+        this.showResults(result);
+    } catch (error) {
+        console.error('Error submitting test:', error);
+        
+        // Fallback: buat hasil lokal jika server tidak tersedia
+        const result = this.createLocalResult();
+        this.saveResult(result);
+        this.showResults(result);
+        
+        alert('Server tidak tersedia. Hasil test disimpan secara lokal.');
+    }
+}
+
+// PERBAIKAN 3: Tambahkan method untuk membuat hasil lokal
+createLocalResult() {
+    const totalAnswered = this.answers.length;
+    const correctAnswers = this.correctCount;
+    const wrongAnswers = this.wrongCount;
+    const accuracy = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
+    const testDuration = (this.endTime - this.startTime) / 1000; // dalam detik
+    const wpm = Math.round((totalAnswered / testDuration) * 60); // questions per minute
+
+    return {
+        accuracy: accuracy,
+        wpm: wpm,
+        correctAnswers: correctAnswers,
+        wrongAnswers: wrongAnswers,
+        totalQuestions: totalAnswered,
+        duration: this.currentTest?.duration || 0,
+        interval: this.currentTest?.interval || 0,
+        timestamp: Date.now()
+    };
+}
+
+// PERBAIKAN 4: Perbaiki startTest untuk menangani error response
+async loadAvailableVocabs() {
+    try {
+        const response = await fetch('/api/vocabs');
+        if (response.ok) {
+            this.availableVocabs = await response.json();
+            this.populateVocabSelect();
+        } else {
+            throw new Error('Failed to fetch vocabs');
+        }
+    } catch (error) {
+        console.error('Error loading vocabs:', error);
+        // Fallback jika server tidak tersedia
+        this.availableVocabs = [
+            { id: 'vocab1', name: 'Vocab1' },
+            { id: 'vocab2', name: 'Vocab2' }
+        ];
+        this.populateVocabSelect();
+    }
+}
+
+// Method untuk populate vocab select
+populateVocabSelect() {
+    const select = document.getElementById('vocab-select');
+    select.innerHTML = '';
+    
+    this.availableVocabs.forEach(vocab => {
+        const option = document.createElement('option');
+        option.value = vocab.id;
+        option.textContent = vocab.name;
+        select.appendChild(option);
+    });
+    
+    // Set default selection
+    if (this.availableVocabs.length > 0) {
+        select.value = this.availableVocabs[0].id;
+    }
+}
+
+// Modifikasi method startTest
+async startTest() {
+    const duration = parseInt(document.getElementById('duration').value);
+    const interval = parseInt(document.getElementById('interval').value);
+    const selectedVocab = document.getElementById('vocab-select').value;
+
+    try {
+        const response = await fetch(`/api/test/generate?duration=${duration}&interval=${interval}&vocab=${selectedVocab}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Response is not JSON format');
+        }
+        
+        this.currentTest = await response.json();
+        
+        if (!this.currentTest || !this.currentTest.questions || !Array.isArray(this.currentTest.questions)) {
+            throw new Error('Invalid test data received');
+        }
+        
+        this.currentQuestion = 0;
+        this.answers = [];
+        this.correctCount = 0;
+        this.wrongCount = 0;
+        this.startTime = Date.now();
+        this.timeRemaining = duration;
+        
+        this.showTestInterface();
+        this.displayQuestion();
+        this.startTimer();
+    } catch (error) {
+        console.error('Error starting test:', error);
+        alert('Server tidak tersedia atau terjadi kesalahan. Silakan periksa koneksi internet Anda dan coba lagi.');
+    }
+}
+showTestInterface() {
+                document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('results-screen').classList.add('hidden');
+                document.getElementById('history-screen').classList.add('hidden');
+                document.getElementById('test-interface').classList.remove('hidden');
+                
+                document.getElementById('total-questions').textContent = this.currentTest.totalQuestions;
+            }
+
+            displayQuestion() {
+                if (this.currentQuestion >= this.currentTest.questions.length) {
+                    this.endTest();
+                    return;
+                }
+
+                const question = this.currentTest.questions[this.currentQuestion];
+                document.getElementById('current-question').textContent = this.currentQuestion + 1;
+                document.getElementById('question-text').textContent = question.question;
+                
+                // Set question type description
+                let typeDescription = '';
+                switch (question.type) {
+                    case 'kanji-to-meaning':
+                        typeDescription = 'Pilih arti yang benar:';
+                        break;
+                    case 'reading-to-meaning':
+                        typeDescription = 'Pilih arti yang benar:';
+                        break;
+                    case 'meaning-to-kanji':
+                        typeDescription = 'Pilih kanji yang benar:';
+                        break;
+                }
+                document.getElementById('question-type').textContent = typeDescription;
+
+                // Display options
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'bg-gray-50 hover:bg-blue-50 border border-gray-300 hover:border-blue-400 p-4 rounded-lg transition duration-200 text-lg font-medium';
+                    button.textContent = option;
+                    button.addEventListener('click', () => this.selectAnswer(option));
+                    optionsContainer.appendChild(button);
+                });
+
+                // Update progress
+                const progress = ((this.currentQuestion) / this.currentTest.totalQuestions) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+            }
+
+           
+            updateLiveStats() {
+                document.getElementById('correct-count').textContent = this.correctCount;
+                document.getElementById('wrong-count').textContent = this.wrongCount;
+                
+                const total = this.correctCount + this.wrongCount;
+                const accuracy = total > 0 ? Math.round((this.correctCount / total) * 100) : 0;
+                document.getElementById('live-accuracy').textContent = accuracy + '%';
+            }
+
+            startTimer() {
+                this.timer = setInterval(() => {
+                    this.timeRemaining--;
+                    const minutes = Math.floor(this.timeRemaining / 60);
+                    const seconds = this.timeRemaining % 60;
+                    document.getElementById('timer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (this.timeRemaining <= 0) {
+                        this.endTest();
+                    }
+                }, 1000);
+            }
+
+           
+            saveResult(result) {
+                let history = JSON.parse(localStorage.getItem('kraepelin-history') || '[]');
+                history.push(result);
+                localStorage.setItem('kraepelin-history', JSON.stringify(history));
+            }
+
+            showResults(result) {
+                document.getElementById('test-interface').classList.add('hidden');
+                document.getElementById('results-screen').classList.remove('hidden');
+                
+                document.getElementById('result-accuracy').textContent = result.accuracy + '%';
+                document.getElementById('result-wpm').textContent = result.wpm;
+                document.getElementById('result-correct').textContent = result.correctAnswers;
+                document.getElementById('result-wrong').textContent = result.wrongAnswers;
+            }
+
+            showMainMenu() {
+                document.getElementById('test-interface').classList.add('hidden');
+                document.getElementById('results-screen').classList.add('hidden');
+                document.getElementById('history-screen').classList.add('hidden');
+                document.getElementById('main-menu').classList.remove('hidden');
+                
+                this.loadStatistics();
+            }
+
+            loadStatistics() {
+                const history = JSON.parse(localStorage.getItem('kraepelin-history') || '[]');
+                
+                if (history.length === 0) {
+                    document.getElementById('last-accuracy').textContent = '-';
+                    document.getElementById('last-wpm').textContent = '-';
+                    document.getElementById('total-tests').textContent = '0';
+                    document.getElementById('best-score').textContent = '-';
+                    return;
+                }
+
+                const lastTest = history[history.length - 1];
+                const bestAccuracy = Math.max(...history.map(h => h.accuracy));
+                const bestWpm = Math.max(...history.map(h => h.wpm));
+                const bestScore = Math.max(bestAccuracy, bestWpm);
+
+                document.getElementById('last-accuracy').textContent = lastTest.accuracy + '%';
+                document.getElementById('last-wpm').textContent = lastTest.wpm;
+                document.getElementById('total-tests').textContent = history.length;
+                document.getElementById('best-score').textContent = Math.round(bestScore);
+            }
+
+            showHistory() {
+                document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('test-interface').classList.add('hidden');
+                document.getElementById('results-screen').classList.add('hidden');
+                document.getElementById('history-screen').classList.remove('hidden');
+                
+                this.displayHistoryTable();
+                this.displayStatisticsChart();
+            }
+
+            displayHistoryTable() {
+                const history = JSON.parse(localStorage.getItem('kraepelin-history') || '[]');
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = '';
+
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada riwayat test</td></tr>';
+                    return;
+                }
+
+                history.reverse().forEach((test, index) => {
+                    const row = document.createElement('tr');
+                    row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                    
+                    const date = new Date(test.timestamp).toLocaleString('id-ID');
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${date}</td>
+                        <td class="px-4 py-2">${test.duration}s</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                test.accuracy >= 80 ? 'bg-green-100 text-green-800' : 
+                                test.accuracy >= 60 ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-red-100 text-red-800'
+                            }">
+                                ${test.accuracy}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-2">
+                           <span class="inline-flex items-center bg-yellow-100 font-yellow-800 items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            ${test.wpm}
+                            </span>
+                            </td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center bg-green-100 font-green-800 items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                         
+                                ${test.correctAnswers}/${test.totalQuestions}
+                            </span>
+                            
+                            </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+
+            displayStatisticsChart() {
+                const history = JSON.parse(localStorage.getItem('kraepelin-history') || '[]');
+                const canvas = document.getElementById('statistics-chart');
+                const ctx = canvas.getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+
+                if (history.length === 0) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#9CA3AF';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Belum ada data untuk ditampilkan', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const labels = history.map((_, index) => `Test ${index + 1}`);
+                const accuracyData = history.map(h => h.accuracy);
+                const wpmData = history.map(h => h.wpm);
+
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Akurasi (%)',
+                                data: accuracyData,
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'WPM',
+                                data: wpmData,
+                                borderColor: 'rgb(16, 185, 129)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+    maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'お勉強'
+                            },
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'パワー (%)'
+                                },
+                                min: 0,
+                                max: 100
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'WPM'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                min: 0
+                            }
+                        }
+                    }
+                });
+            }
+
+            clearHistory() {
+                if (confirm('Apakah Anda yakin ingin menghapus semua riwayat test?')) {
+                    localStorage.removeItem('kraepelin-history');
+                    this.displayHistoryTable();
+                    this.displayStatisticsChart();
+                    this.loadStatistics();
+                    alert('Riwayat test berhasil dihapus.');
+                }
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new KraepelinTest();
+        });
+    </script>
+</body>
+</html>
